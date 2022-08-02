@@ -6,7 +6,7 @@ use crate::mm::{translated_refmut, translated_str};
 use crate::task::{
     add_task, current_task, current_task_map, current_task_unmap, current_user_token,
     exit_current_and_run_next, get_current_task_st_time, get_current_task_status,
-    get_current_task_syscall_times, suspend_current_and_run_next, TaskStatus,
+    get_current_task_syscall_times, suspend_current_and_run_next, TaskControlBlock, TaskStatus,
 };
 use crate::timer::get_time_us;
 use alloc::sync::Arc;
@@ -151,10 +151,14 @@ pub fn sys_munmap(start: usize, len: usize) -> isize {
 pub fn sys_spawn(path: *const u8) -> isize {
     let token = current_user_token();
     let path = translated_str(token, path);
-    println!("spawn {}", path);
     if let Some(data) = get_app_data_by_name(path.as_str()) {
         let current = current_task().unwrap();
-        let child = current.spawn(data);
+        let child = Arc::new(TaskControlBlock::new(data));
+        current
+            .inner_exclusive_access()
+            .children
+            .push(Arc::clone(&child));
+        child.inner_exclusive_access().parent = Some(Arc::downgrade(&current));
         let pid = child.pid.0;
         add_task(child);
         pid as isize
