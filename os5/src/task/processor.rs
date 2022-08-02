@@ -7,7 +7,7 @@
 use super::__switch;
 use super::{fetch_task, TaskStatus};
 use super::{TaskContext, TaskControlBlock};
-use crate::config::MAX_SYSCALL_NUM;
+use crate::config::{BIG_STRIDE, MAX_SYSCALL_NUM};
 use crate::sync::UPSafeCell;
 use crate::timer::get_time_us;
 use crate::trap::TrapContext;
@@ -61,6 +61,7 @@ pub fn run_tasks() {
             if task_inner.task_st_time == usize::MAX {
                 task_inner.task_st_time = get_time_us();
             }
+            task_inner.pass += BIG_STRIDE as isize / task_inner.prio;
             drop(task_inner);
             // release coming task TCB manually
             processor.current = Some(task);
@@ -144,4 +145,10 @@ pub fn current_task_unmap(start: usize, len: usize) -> isize {
     let task = current_task().unwrap();
     let mut inner = task.inner_exclusive_access();
     inner.memory_set.checked_unmap(start, len)
+}
+
+pub fn set_priority(prio: isize) {
+    let task = current_task().unwrap();
+    let mut inner = task.inner_exclusive_access();
+    inner.prio = prio;
 }

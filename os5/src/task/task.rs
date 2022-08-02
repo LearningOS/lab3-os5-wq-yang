@@ -211,3 +211,30 @@ pub enum TaskStatus {
     Running,
     Zombie,
 }
+
+use core::cmp::Ordering;
+impl Ord for TaskControlBlock {
+    fn cmp(&self, other: &Self) -> Ordering {
+        let self_pass = self.inner_exclusive_access().pass;
+        let other_pass = other.inner_exclusive_access().pass;
+
+        other_pass.cmp(&self_pass)
+    }
+}
+impl PartialOrd for TaskControlBlock {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        let self_pass = self.inner_exclusive_access().pass;
+        let other_pass = other.inner_exclusive_access().pass;
+
+        other_pass.partial_cmp(&self_pass)
+    }
+}
+impl PartialEq for TaskControlBlock {
+    fn eq(&self, other: &Self) -> bool {
+        let self_pass = self.inner_exclusive_access().pass;
+        let other_pass = other.inner_exclusive_access().pass;
+
+        self_pass == other_pass
+    }
+}
+impl Eq for TaskControlBlock {}

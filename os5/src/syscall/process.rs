@@ -6,7 +6,8 @@ use crate::mm::{translated_refmut, translated_str};
 use crate::task::{
     add_task, current_task, current_task_map, current_task_unmap, current_user_token,
     exit_current_and_run_next, get_current_task_st_time, get_current_task_status,
-    get_current_task_syscall_times, suspend_current_and_run_next, TaskControlBlock, TaskStatus,
+    get_current_task_syscall_times, set_priority, suspend_current_and_run_next, TaskControlBlock,
+    TaskStatus,
 };
 use crate::timer::get_time_us;
 use alloc::sync::Arc;
@@ -132,8 +133,12 @@ pub fn sys_task_info(ti: *mut TaskInfo) -> isize {
 }
 
 // YOUR JOB: 实现sys_set_priority，为任务添加优先级
-pub fn sys_set_priority(_prio: isize) -> isize {
-    -1
+pub fn sys_set_priority(prio: isize) -> isize {
+    if prio < 2 {
+        return -1;
+    }
+    set_priority(prio);
+    prio
 }
 
 // YOUR JOB: 扩展内核以实现 sys_mmap 和 sys_munmap

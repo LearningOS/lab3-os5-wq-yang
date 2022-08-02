@@ -30,7 +30,7 @@ pub use pid::{pid_alloc, KernelStack, PidHandle};
 pub use processor::{
     current_task, current_task_map, current_task_unmap, current_trap_cx, current_user_token,
     get_current_task_st_time, get_current_task_status, get_current_task_syscall_times,
-    inc_syscall_times, run_tasks, schedule, take_current_task,
+    inc_syscall_times, run_tasks, schedule, set_priority, take_current_task,
 };
 
 /// Make current task suspended and switch to the next task
